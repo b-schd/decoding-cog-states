@@ -1,15 +1,16 @@
-function CCDTglasso
+function CCDTglasso(ddir, pdir, verbose)
 % function CCDTglasso
 % Correlate graph metrics with RT performance
 %   GN 06/2020
 
 % parameters
-verbose = false; %if true, prints a statement for each iteration of GLASSO
-pdir = '/Users/graceng/Documents/Med_School/Research/BCI/glasso_data/'; % processed data directory
+%verbose = false; %if true, prints a statement for each iteration of GLASSO
+%pdir = '/Users/graceng/Documents/Med_School/Research/BCI/glasso_data/'; % processed data directory
 WstDir = 'WstGLASSO/'; %create this directory to save Wst data
 %graphDir = 'graphGLASSO/'; %create this directory to save graph metrics
 svnm = 'GLASSO_allF_10secpre_sIall';
-p.ddir = '/Users/graceng/OneDrive/CCDTnewDat/CCDT/eeg/'; % data directory
+%p.ddir = '/Users/graceng/OneDrive/CCDTnewDat/CCDT/eeg/'; % data directory
+p.ddir = ddir;
 %behavfile = '/Volumes/CCDT/procDataFiles/allSubjBehaviorStruct.mat';
 
 
