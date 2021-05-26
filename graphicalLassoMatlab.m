@@ -1,8 +1,5 @@
 % Graphical Lasso function
-% Author: Xiaohui Chen (xhchen@illinois.edu)
-% Department of Statistics
-% University of Illinois at Urbana-Champaign
-% Version: 2012-Feb
+% Modified from Xiaohui Chen (xhchen@illinois.edu)
 
 function [Theta, W, logL, converge] = graphicalLassoMatlab(S, rho, verbose, maxIt, tol)
 
@@ -43,6 +40,12 @@ while i < maxIt
         jminus = setdiff(1:p,j);
         [V, D] = eig(W(jminus,jminus));
         d = diag(D);
+        if min(d) < 0.
+            W = W_old;
+            converge = false;
+            i = maxIt;
+            break;
+        end
         X = V * diag(sqrt(d)) * V'; % W_11^(1/2)
         Y = V * diag(1./sqrt(d)) * V' * S(jminus,j);    % W_11^(-1/2) * s_12
         b = lassoShooting(X, Y, rho, maxIt, tol);
@@ -53,10 +56,12 @@ while i < maxIt
         fprintf('Iteration %d\n', i);
     end
     % Stop criterion
-    if norm(W-W_old,1) < tol
+    if norm(W-W_old,1) < tol && converge
         break; 
     elseif i == maxIt
         converge = false;
+    end
+    if ~converge
         fprintf('%s\n', 'Maximum number of iterations reached, glasso did not converge.');
     end
     W_old = W;
@@ -103,8 +108,3 @@ while i < maxIt
     if delta < tol, break; end
     b_old = b;
 end
-%{
-if i == maxIt
-    fprintf('%s\n', 'Maximum number of iteration reached, shooting may not converge.');
-end
-%}
