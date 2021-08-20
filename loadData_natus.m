@@ -22,8 +22,8 @@ if nargin
 end
 
 % load params.txt
-cd([ddir subj '/eeg.' reref]);
-fid = fopen('params.txt');
+ref_pth = fullfile(ddir, subj, ['/eeg.' reref]);
+fid = fopen(fullfile(ref_pth, 'params.txt'));
 C = textscan(fid,'%s %s');
 fclose(fid);
 if strcmp(C{1}{1},'samplerate')
@@ -46,7 +46,8 @@ else
 end
 
 % load jacksheet.txt
-fid = fopen('../docs/jacksheet.txt');
+doc_pth = fullfile(ddir, subj, 'docs');
+fid = fopen(fullfile(doc_pth, 'jacksheet.txt'));
 J = textscan(fid,'%d %s');
 fclose(fid);
 uch = J{1}; % channel numbers in jacksheet
@@ -54,9 +55,9 @@ chnm = J{2}; % channel names in jacksheet
 
 % parse file names
 if ~isempty(stime)
-    fnm = dir([subj '_' sess '_' stime '*']);
+    fnm = dir(fullfile(ref_path, [subj '_' sess '_' stime '*']));
 else
-    fnm = dir([subj '_' sess '*']);
+    fnm = dir(fullfile(ref_pth, [subj '_' sess '*']));
 end
 Nfile = length(fnm);
 chnum = []; stimes = [];
@@ -81,7 +82,7 @@ for ii = 1:Nfile
     ich = find(uch==str2double(cch));
     cst = cfnm(end-7:end-4); % session time
     ist = find(ustimes==str2double(cst));
-    fid = fopen(cfnm,'r');
+    fid = fopen(fullfile(fnm(ii).folder, cfnm),'r');
     cdat = fread(fid,inf,dform)*gain;
     fclose(fid);
     for jj = 1:Nst % initialize

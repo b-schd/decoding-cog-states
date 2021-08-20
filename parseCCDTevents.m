@@ -16,15 +16,13 @@ if nargin
 end
 
 % load events
-cd(ddir);
-load([subj '_events.mat'],'-mat');
+load(fullfile(ddir, '..' , 'events', [subj '_events.mat']),'-mat');
 eval(['evdata = events;']); clear events % built-in function called events
 N = length(evdata); % number of events
 
 % find sampling rate from params.txt (only needed if re-computing DT/RT)
-cd ..
-cd(['./eeg/' subj '/eeg.noreref']);
-fid = fopen('params.txt');
+pth = fullfile(ddir, subj, 'eeg.noreref');
+fid = fopen(fullfile(pth, 'params.txt'));
 C = textscan(fid,'%s %s');
 fclose(fid);
 if strcmp(C{1}{1},'samplerate')
