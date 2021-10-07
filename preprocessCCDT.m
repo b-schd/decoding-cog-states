@@ -28,6 +28,7 @@ else
     p.sI = 1;
     p.sess = []; % session date (leave empty to chose automatically)
     p.stime = []; % session time (leave empty for all session times)
+    p.reref = 'noreref';
     p.rln = 1; % remove line noise? (0 or 1)
     p.rrf = 1; % re-reference? (0 = none, 1 = common average re-reference, 2 = bipolar re-reference, 3 = laplacian re-reference)
     p.outl = 1; % remove outlier (disconnected) channels? (0 or 1)
