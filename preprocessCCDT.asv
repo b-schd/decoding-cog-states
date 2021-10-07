@@ -106,7 +106,7 @@ for isubj = p.stsubj:Nsubj
     % get indices for baseline time window
     bwin = round(p.baselineLength*-1/1000*fs):0;
     bNsamp = length(bwin);
-    bIndMat = ccdt(1,1)*ones(bNsamp,1) + bwin'; % has dimensions samples x 1
+    bIndMat = ccdt(1,1)*ones(bNsamp) + bwin; % has dimensions samples x 1
 
     % get data for baseline time window
     bDatwin = zeros(Nch,bNsamp);

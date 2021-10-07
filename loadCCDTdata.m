@@ -21,7 +21,6 @@ end
 
 % load data
 p.ddir = ddir; p.subj = subj; p.sess = sess; p.stime = stime; p.verbose = 0;
-p.reref = 'noreref'; % always use 'noreref' for CCDT analysis
 [dat,Nsamp,fs,chn,chnm] = loadData_natus(p);
 
 % remove non-sEEG (DC, EKG, EOG, EEG) channels
