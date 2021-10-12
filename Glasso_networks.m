@@ -4,33 +4,34 @@
 %   * "Rscript" command accessible from the commandline
 %   * Library requirements in R: bootnet, R.matlab
 
-
 % load parameters
 params = proj_config();
+savepth = fullfile(params.ddir, params.subj, 'control', sprintf('cntrl_data_%s_%s.mat', params.subj, params.sess)); 
 
 % get subject data and event info
-
-% TODO: write a new script that extracts data into the correct trial format,
-% and that also gets 10 sec of the baseline recording data out
 [dataStruct, Nsubj] = preprocessCCDT(params.ddir, params.subjChLoc, ...
     params.subj, params);
 Ntrl = dataStruct.Ntrl;
+fs = dataStruct.fs;
 bDatwin = dataStruct.bDatwin;
 datwin = dataStruct.datwin;
 
 % Create networks from each time window of length Lwin, and compute control
 % metrics
-[baselineNetworks] = getNets(params.glassoPath, bDatwin, params.Lwin, params.gamma, params.beta); 
+[baselineNetworks] = getNets(params.glassoPath, bDatwin, params.Lwin*fs, params.gamma, params.beta); 
 [baselineMetrics] = getMets(baselineNetworks);
-% TODO: need to save the data for the baseline recording period
 
+save(savepth, 'params', 'baselineNetworks', 'baselineMetrics', '-V7.3')
+
+
+clear trialNetworks trialMetrics 
 for ii = 1:Ntrl
-    [trialNetworks] = getNets(params.glassoPath, squeeze(datwin(:,ii,:)), ...
-        params.Lwin, params.gamma, params.beta);
-    [trialMetrics] = getMets(trialNetworks);
-    % TODO: need to save the data for the trial
+     trialNetworks(ii) = getNets(params.glassoPath, squeeze(datwin(:,ii,:)), ...
+        params.Lwin*fs, params.gamma, params.beta);
+    trialMetrics(ii) = getMets(trialNetworks(ii));
+    
+    save(savepth, 'trialNetworks', 'trialMetrics', '-V7.3', '-append')
 end
 
-savepth = fullfile(params.ddir, 'control', p.subj, sprintf('cntrl_data_%s_%s.mat', p.subj, p.sess)); 
 
-save(savepth, 'params', 'Networks', 'metric_matrices')
+
