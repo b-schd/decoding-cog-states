@@ -22,6 +22,7 @@ if nargin
 end
 
 % load params.txt
+startingPath = pwd;
 cd([ddir subj '/eeg.' reref]);
 fid = fopen('params.txt');
 C = textscan(fid,'%s %s');
@@ -98,3 +99,4 @@ for ii = 1:Nst-1
     Nsamp = [Nsamp; size(datc{ii},1)]; % samples in each session time
 end
 dat = cat(1,datc{:}); % concatenate data from multiple session times if more than one
+cd(startingPath);

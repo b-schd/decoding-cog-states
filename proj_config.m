@@ -3,11 +3,11 @@ function p = proj_config()
 
 % Parameters for obtaining data
 p.ddir = '/Users/graceng/OneDrive/CCDTnewDat/CCDT/eeg/'; %'/Users/bscheid/Documents/LittLab/PROJECTS/p15_Cog_Performance/CCDT/eeg/'; % data directory
-p.subjChLoc = '/Users/graceng/Documents/Med_School/Research/BCI/glasso_data/patient_loc.mat';
+p.subjChLoc = '/Users/graceng/Documents/Med_School/Research/BCI/glasso_data/patient_loc_101421.mat';
 p.subj = 'HUP069'; %'HUP142'; % string name of the subject (eg, 'HUP069') or 
 % [] to process all subjects
 p.stsubj = 1; %index of first subject if processing all subjects
-p.sess = []; % session date (leave empty to chose automatically)
+p.sess = []; % session date (leave empty to choose automatically)
 p.stime = []; % session time (leave empty for all session times)
 p.sI = 1; %0 for sI0, 1 for sIall
 

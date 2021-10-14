@@ -65,6 +65,7 @@ if ~isempty(p.subj)
     ind = find(ind);
     if isempty(ind), error('subj/sess not found in database'); end
     db = db(ind(1),:);
+    p.stsubj = 1;
 end
 
 % load data
@@ -73,6 +74,7 @@ load(p.subjChLoc);
 
 dataStruct = struct;
 for isubj = p.stsubj:Nsubj
+    if isempty(p.subj), ind = isubj; end
     disp([num2str(isubj) '/' num2str(Nsubj)]);
     p.subj = db{isubj,1}; q.subj = p.subj;
     p.sess = db{isubj,2}; q.sess = p.sess;
@@ -80,9 +82,10 @@ for isubj = p.stsubj:Nsubj
     
     % load data for this subject
     [dat,Nsamp,fs,gch, gchlbl] = loadCCDTdata(p);
-    gchlbl(patient_loc(1).session(isubj).type==0)=[];
-    gch(patient_loc(1).session(isubj).type==0)=[];
-    dat(:,patient_loc(1).session(isubj).type==0) = [];
+    % remove bad channels
+    gchlbl(patient_loc(1).session(ind).type==0)=[]; %note: patient_loc(1) pulls channel info from the subject's first session
+    gch(patient_loc(1).session(ind).type==0)=[];
+    dat(:,patient_loc(1).session(ind).type==0) = [];
     Nch = size(dat,2);
     
     % load events for this subject

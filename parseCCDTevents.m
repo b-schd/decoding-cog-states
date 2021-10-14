@@ -16,6 +16,7 @@ if nargin
 end
 
 % load events
+startingPath = pwd;
 cd(ddir);
 load([subj '_events.mat'],'-mat');
 eval(['evdata = events;']); clear events % built-in function called events
@@ -90,3 +91,4 @@ end
 if strcmp(subj,'HUP069')
     ccdt(42:45,:) = []; % recording blanked out for these 4 trials
 end
+cd(startingPath);
