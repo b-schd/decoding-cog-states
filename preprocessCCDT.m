@@ -32,6 +32,7 @@ else
     p.rln = 1; % remove line noise? (0 or 1)
     p.rrf = 1; % re-reference? (0 = none, 1 = common average re-reference, 2 = bipolar re-reference, 3 = laplacian re-reference)
     p.outl = 1; % remove outlier (disconnected) channels? (0 or 1)
+    p.bpfilt = [.5, 150]; % band pass filter cuttoffs (Hz) (leave empty if no filter)
     p.outlMetric = 'powGamma'; % outlier metric ('rms' = root-median-squared, 'powGamma' = high-gamma power)
     p.outlThresh = 5; % outlier threshold (standard deviations)
     p.baselineLength = 10000;
@@ -139,6 +140,7 @@ for isubj = p.stsubj:Nsubj
     dataStruct(isubj).Ntrl = Ntrl;
     dataStruct(isubj).Nch = Nch;
     dataStruct(isubj).Nsamp = Nsamp;
+    dataStruct(isubj).fs = fs; 
     dataStruct(isubj).CT = CT;
     dataStruct(isubj).DT = DT;
     dataStruct(isubj).RT = RT;
