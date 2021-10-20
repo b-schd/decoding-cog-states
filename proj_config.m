@@ -7,7 +7,7 @@ p.subjChLoc = '/Users/bscheid/Documents/LittLab/PROJECTS/p15_Cog_Performance/CCD
 p.subj = 'HUP069'; %'HUP142'; % string name of the subject (eg, 'HUP069') or 
 % [] to process all subjects
 p.stsubj = 1; %index of first subject if processing all subjects
-p.sess = []; % session date (leave empty to chose automatically)
+p.sess = '04Oct17'; %[]; % session date (leave empty to chose automatically)
 p.stime = []; % session time (leave empty for all session times)
 p.sI = 1; %0 for sI0, 1 for sIall
 
@@ -24,8 +24,8 @@ p.outlThresh = 5; % outlier threshold (standard deviations)
 % Parameters identifying time windows of interest
 p.baselineLength = 10000; % length of time window (ms) for baseline 
                             % recording prior to first cue
-p.iev = 1; % event of interest (1 = cue, 2 = go, 3 = response)
-p.winLength = 2500; % length of time window (ms) to analyze prior to event of interest
+p.iev = 2; % event of interest (1 = cue, 2 = go, 3 = response)
+p.winLength = 500; % length of time window (ms) to analyze prior to event of interest
 
 % Parameters for GLASSO
 p.Lwin = 0.5; % length of window (s) to compute controllability
