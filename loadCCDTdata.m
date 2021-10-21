@@ -13,6 +13,7 @@ stime = []; % session time (leave empty for all session times)
 rln = 1; % remove line noise? (0 or 1)
 rrf = 2; % re-reference? (0 = none, 1 = common average re-reference, 2 = bipolar re-reference, 3 = laplacian re-reference)
 outl = 1; % remove outlier channels? (0 or 1)
+bpfilt = [.5, 150]; % band pass filter cuttoffs (Hz) (leave empty if no filter)
 outlMetric = 'powGamma'; % outlier metric ('rms' = root-median-squared, 'powGamma' = high-gamma power)
 outlThresh = 5; % outlier threshold (standard deviations)
 if nargin
@@ -78,6 +79,12 @@ end
 % common average re-reference
 if rrf==1
     dat = dat - mean(dat,2)*ones(1,size(dat,2));
+end
+
+% bandpass filter
+if bpfilt
+    [b,a] = butter(2, bpfilt/fs); 
+    dat = filtfilt(b, a, dat);
 end
 
 % monopolar, bipolar, laplacian montage

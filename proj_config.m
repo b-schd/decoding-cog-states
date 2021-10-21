@@ -16,6 +16,7 @@ p.reref = 'noreref';
 p.rln = 1; % remove line noise? (0 or 1)
 p.rrf = 1; % re-reference? (0 = none, 1 = common average re-reference, 2 = bipolar re-reference, 3 = laplacian re-reference)
             % always use 0 (no re-referencing for CCDT data)
+p.bpfilt = [.5, 150]; % band pass filter cuttoffs (Hz) (leave empty if no filter)
 p.outl = 1; % remove outlier channels? (0 or 1)
 p.outlMetric = 'powGamma'; % outlier metric ('rms' = root-median-squared, 'powGamma' = high-gamma power)
 p.outlThresh = 5; % outlier threshold (standard deviations)
@@ -30,6 +31,6 @@ p.winLength = 2500; % length of time window (ms) to analyze prior to event of in
 p.Lwin = 0.5; % length of window (s) to compute controllability
 p.glassoPath = './'; 
 p.gamma = .25;
-p.beta = 1;
+p.beta = [];
 
 end

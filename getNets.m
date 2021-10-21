@@ -9,7 +9,7 @@ function [Networks]=getNets(path, data, Lwin, gamma, beta)
 % Lwin: time window to create network over (in samples)
 % gamma: EBIC parameter, 0.1-less regularization, 0.5-more regularization
 % beta: tune the intensity of distance weighting for community detection,
-% can be a scalar or row vector of values to compute.
+% can be a scalar or row vector of values to compute, leave empty if none.
 %
 % OUTPUT:
 % Networks struct with the following fields: 
