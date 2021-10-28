@@ -84,9 +84,14 @@ for isubj = p.stsubj:Nsubj
     % load data for this subject
     [dat,Nsamp,fs,gch, gchlbl] = loadCCDTdata(p);
     % remove bad channels
-    gchlbl(patient_loc(1).session(ind).type==0)=[]; %note: patient_loc(1) pulls channel info from the subject's first session
-    gch(patient_loc(1).session(ind).type==0)=[];
-    dat(:,patient_loc(1).session(ind).type==0) = [];
+    if length(ind) > 1
+        sess_ind = ind(1);
+    else
+        sess_ind = ind;
+    end
+    gchlbl(patient_loc(1).session(sess_ind).type==0)=[]; %note: patient_loc(1) pulls channel info from the subject's first session
+    gch(patient_loc(1).session(sess_ind).type==0)=[];
+    dat(:,patient_loc(1).session(sess_ind).type==0) = [];
     Nch = size(dat,2);
     
     % load events for this subject
