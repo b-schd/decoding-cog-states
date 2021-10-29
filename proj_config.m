@@ -3,6 +3,7 @@ function p = proj_config()
 
 % Parameters for obtaining data
 p.ddir = '/Users/graceng/OneDrive/CCDTnewDat/CCDT/eeg/'; %'/Users/bscheid/Documents/LittLab/PROJECTS/p15_Cog_Performance/CCDT/eeg/'; % data directory
+p.ndir = '/Users/graceng/Documents/Med_School/Research/BCI/glasso_data/'; % directory to saved network metrics
 p.subjChLoc = '/Users/graceng/Documents/Med_School/Research/BCI/glasso_data/patient_loc_101421.mat';
 p.subj = 'HUP069'; %'HUP142'; % string name of the subject (eg, 'HUP069') or 
 % [] to process all subjects

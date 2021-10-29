@@ -151,7 +151,8 @@ for isubj = p.stsubj:Nsubj
     dataStruct(isubj).RT = RT;
     dataStruct(isubj).gchlbl = gchlbl;
     dataStruct(isubj).gch = gch;
-    dataStruct(isubj).subjName = db(isubj);
+    dataStruct(isubj).subjName = p.subj;
+    dataStruct(isubj).sessName = p.sess;
 end
 
 if ~isempty(p.pdir)
