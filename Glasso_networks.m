@@ -27,16 +27,19 @@ datwin = dataStruct.datwin;
 
 
 % Compute networks for trial an windows specified in params
-clear trialNetworks trialMetrics 
+tic
+clear Networks Metrics 
 iev_params = params; 
 for ii = 1:Ntrl
-     trialNetworks(ii) = getNets(params.glassoPath, squeeze(datwin(:,ii,:)), ...
+    ii
+     Networks(ii) = getNets(params.glassoPath, squeeze(datwin(:,ii,:)), ...
         params.Lwin*fs, params.gamma, params.beta);
-    trialMetrics(ii) = getMets(trialNetworks(ii));
+    Metrics(ii) = getMets(Networks(ii));
     
-    save(fullfile(savepth, sprintf('iev_%d_%s_%s.mat', params.iev, params.subj, params.sess)), ...
+    save(fullfile(savepth, sprintf('iev-%d_%s%s_bp-%1.0f-%1.0f.mat', params.iev,...
+        params.subj, params.sess, params.bpfilt)), ...
         'Networks', 'Metrics', 'iev_params', '-V7.3')
 end
-
+toc
 
 
