@@ -8,6 +8,12 @@
 params = proj_config();
 savepth = fullfile(params.ddir, params.subj, 'networks');
 
+filtList =[[3 12]; [14 30]; [35 55]; [70 150]];
+
+for i = 1:length(filtList)
+    
+    params.bpfilt = filtList(i,:); 
+
 % get subject data and event info
 [dataStruct, Nsubj] = preprocessCCDT(params.ddir, params.subjChLoc, ...
     params.subj, params);
@@ -36,10 +42,11 @@ for ii = 1:Ntrl
         params.Lwin*fs, params.gamma, params.beta);
     Metrics(ii) = getMets(Networks(ii));
     
-    save(fullfile(savepth, sprintf('iev-%d_%s%s_bp-%1.0f-%1.0f.mat', params.iev,...
-        params.subj, params.sess, params.bpfilt)), ...
+    save(fullfile(savepth, sprintf('%s_iev-%d_bp-%1.0f-%1.0f.mat', params.subj,...
+        params.iev, params.bpfilt)), ...
         'Networks', 'Metrics', 'iev_params', '-V7.3')
 end
 toc
 
 
+end
