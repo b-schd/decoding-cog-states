@@ -8,6 +8,12 @@
 params = proj_config();
 savepth = fullfile(params.ddir, params.subj, 'networks');
 
+filtList =[[3 12]; [14 30]; [35 55]; [70 150]];
+
+for i = 1:length(filtList)
+    
+    params.bpfilt = filtList(i,:); 
+
 % get subject data and event info
 [dataStruct, Nsubj] = preprocessCCDT(params.ddir, params.subjChLoc, ...
     params.subj, params);
@@ -27,16 +33,20 @@ datwin = dataStruct.datwin;
 
 
 % Compute networks for trial an windows specified in params
-clear trialNetworks trialMetrics 
+tic
+clear Networks Metrics 
 iev_params = params; 
 for ii = 1:Ntrl
-     trialNetworks(ii) = getNets(params.glassoPath, squeeze(datwin(:,ii,:)), ...
+    ii
+     Networks(ii) = getNets(params.glassoPath, squeeze(datwin(:,ii,:)), ...
         params.Lwin*fs, params.gamma, params.beta);
-    trialMetrics(ii) = getMets(trialNetworks(ii));
+    Metrics(ii) = getMets(Networks(ii));
     
-    save(fullfile(savepth, sprintf('iev_%d_%s_%s.mat', params.iev, params.subj, params.sess)), ...
+    save(fullfile(savepth, sprintf('%s_iev-%d_bp-%1.0f-%1.0f.mat', params.subj,...
+        params.iev, params.bpfilt)), ...
         'Networks', 'Metrics', 'iev_params', '-V7.3')
 end
+toc
 
 
-
+end
