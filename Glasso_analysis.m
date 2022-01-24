@@ -22,22 +22,23 @@
 % %% LOAD DATA %% %
 
 params = proj_config();
+net_type = 'ar';
 
 % Load Network and Metrics data for baseline, pre cue, and pre go
 try
 Baseline = load(fullfile(params.ddir, params.subj, 'networks',...
-    sprintf('baseline_%s_%s.mat', params.subj, params.sess)));
+    sprintf('net-%s_baseline_%s_%s.mat', params.subj, net_type, params.sess)));
 catch
 end
 
 try
 preCue = load(fullfile(params.ddir, params.subj, 'networks',...
-    sprintf('iev_1_%s_%s.mat', params.subj, params.sess)));
+    sprintf('net-%s_iev_1_%s_%s.mat', params.subj, net_type, params.sess)));
 catch; end
 
 try
 preGo = load(fullfile(params.ddir, params.subj, 'networks',...
-    sprintf('iev_2_%s_%s.mat', params.subj, params.sess)));
+    sprintf('net-%s_iev_2_%s_%s.mat',params.subj, net_type, params.sess)));
 catch; end
 
 % Load DataStruct

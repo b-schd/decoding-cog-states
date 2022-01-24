@@ -1,4 +1,16 @@
-function [metric_matrices]=getMets(Network, metrics, thresh)
+function [metric_matrices]=getMetsUND(Network, metrics, thresh)
+% Get metrics for UNDIRECTED (symmetric) adjacency matrices
+% INPUTS:
+%   Network: A struct with fields pcm and config_pcm holding partial corr. matrices
+%   metrics: a string array with the metric names to calculate:
+%       'globalCtrl', 'aveCtrl', 'modalCtrl', 'pmodalCtrl', 'tModalCtrl', 
+%       'strength', 'strenghtPos', 'strenghtNeg', 'sekwnessMet',
+%       'kurtosisMet', degree', 'clustering3'
+%
+% OUTPUTS:
+%   metric_matrices: Struct with fields corresponding to the calculated
+%                    metrics. 
+
 
 metric_matrices= struct(); 
 
