@@ -1,4 +1,4 @@
-function [Networks]=getNets(path, data, Lwin, gamma, beta) 
+function [Networks]=getGLASSONets(path, data, Lwin, gamma, beta) 
 % This script calls the getICov.R script located in EC_glasso to retrieve
 % regularized inverse covariance and partial correlation matrices across windows of 
 % channels recordings in "data". 
