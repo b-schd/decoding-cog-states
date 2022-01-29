@@ -30,7 +30,7 @@ datwin = dataStruct.datwin;
 clear trialNetworks trialMetrics 
 iev_params = params; 
 for ii = 1:Ntrl
-     trialNetworks(ii) = getNets(params.glassoPath, squeeze(datwin(:,ii,:)), ...
+    trialNetworks(ii) = getNets(params.glassoPath, squeeze(datwin(:,ii,:)), ...
         params.Lwin*fs, params.gamma, params.beta);
     trialMetrics(ii) = getMets(trialNetworks(ii));
     
