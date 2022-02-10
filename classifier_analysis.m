@@ -1,27 +1,17 @@
 % parameters
-cleanTrials = false; %if true, remove all trials with negative reaction times
-freqBand = 'High Gamma'; %'none' for no band pass
-freqBandMap = containers.Map({'none', 'Theta/Alpha', 'Beta', 'Low Gamma', ...
-    'High Gamma'}, {[0 150], [3 12], [14 30], [35 55], [70 150]}); 
-            %{} if data is not split up according to frequency bands
+netType = 'AR_networks'; %name of directory with network metrics of interest
+cleanTrials = true; %if true, remove all trials with negative reaction times
+netMetrics = {'strength', 'SSIndex', 'sourceIndex', 'sinkIndex'}; %network metric(s) of interest 
+freqBands = {'ThetaAlpha', 'Beta', 'LowGamma','HighGamma'}; 
+             %frequency band(s) of interest; use 'none' for no band passing
+freqBandMap = containers.Map({'none', 'ThetaAlpha', 'Beta', 'LowGamma', ...
+    'HighGamma'}, {[0 150], [3 12], [14 30], [35 55], [70 150]}); 
 plrty = 1; %polarity can be 1 or 2 for channel location file
 k = 10; %number of folds for k-fold cross validation
-n_rep = 10; %number of times to repeat k-fold cross validation
-nboot = 1000;
+nboot = 1000; %n for bootstrapping AUC values
 
 %%% LOAD DATA %%%
 params = proj_config();
-
-% Load DataStruct
-[dataStruct, Nsubj] = preprocessCCDT(params.ddir, params.subjChLoc, ...
-    params.subj, params); 
-
-% Load Network and Metrics data for baseline, pre cue, and pre go
-bands = freqBandMap(freqBand);
-preCue = load(fullfile(params.ndir, params.subj, 'networks', ...
-    sprintf('%s_iev-1_bp-%d-%d.mat', params.subj, bands(1), bands(2))));
-preGo = load(fullfile(params.ndir, params.subj, 'networks', ...
-    sprintf('%s_iev-2_bp-%d-%d.mat', params.subj, bands(1), bands(2))));
 
 % Load SEEG location data 
 load(params.subjChLoc);
@@ -35,39 +25,81 @@ subjInd = find(subjInd);
 if isempty(subjInd), error('subj/sess not found in database'); end
 locInfo = patient_loc(plrty).session(subjInd);
 
-% Set up average controllability matrices
+load(params.RTdata);
+RT = RTstruct.(params.subj).RT;
+% option to clean trials when button was pressed before the cue
 if cleanTrials
-    trialIdxs = find(dataStruct.RT >= 0);
+    trialIdxs = find(RT >= 0);
 else
-    trialIdxs = 1:dataStruct.Ntrl;
+    trialIdxs = 1:length(RT);
 end
 Ntrl = length(trialIdxs);
-Nch = size(preCue.Metrics(1).aveCtrl,1);
-precueControl = ones(Ntrl,Nch,size(preCue.Metrics(1).aveCtrl,2));
-pregoControl = ones(Ntrl,Nch,size(preGo.Metrics(1).aveCtrl,2));
-for i = 1:Ntrl
-    precueControl(i,:,:) = preCue.Metrics(trialIdxs(i)).aveCtrl;
-    pregoControl(i,:,:) = preGo.Metrics(trialIdxs(i)).aveCtrl;
+
+stats = struct('preCue',struct,'preGo',struct);
+for i = 1:length(freqBands)
+    freqBand = freqBands{i};
+    bands = freqBandMap(freqBand);
+    stats.preCue.(freqBand) = {};
+    stats.preGo.(freqBand) = {};
+    % Load network metric data
+    preCue = load(fullfile(params.ndir, params.subj, netType, ...
+        sprintf('%s_net-ar_iev-1_bp-%d-%d.mat', params.subj, bands(1), bands(2))));
+    preGo = load(fullfile(params.ndir, params.subj, netType, ...
+        sprintf('%s_net-ar_iev-2_bp-%d-%d.mat', params.subj, bands(1), bands(2))));
+    for j = 1:length(netMetrics)
+        netMetric = netMetrics{j};
+        Nch = size(preCue.Metrics(1).(netMetric),1);
+        preCueMetric = ones(Ntrl,Nch,size(preCue.Metrics(1).(netMetric),2));
+        preGoMetric = ones(Ntrl,Nch,size(preGo.Metrics(1).(netMetric),2));
+        for k = 1:Ntrl
+            preCueMetric(k,:,:) = preCue.Metrics(trialIdxs(k)).(netMetric);
+            preGoMetric(k,:,:) = preGo.Metrics(trialIdxs(k)).(netMetric);
+        end
+
+        % Run classifier
+        Xcue = preCueMetric(:,:,end); %analyze the metrics from the last time bin 
+        Xgo = preGoMetric(:,:,end);
+        y = RT(trialIdxs);
+        y_binned = (y < median(y)); %split RTs into fast half vs slow half
+        thisStats = runSVM(Xcue, Xgo, y_binned, k, nboot);
+        stats.preCue.(freqBand).(netMetric).auc = thisStats{1}.auc;
+        stats.preCue.(freqBand).(netMetric).scores = thisStats{1}.scores;
+        stats.preCue.(freqBand).(netMetric).labels = thisStats{1}.labels;
+        stats.preGo.(freqBand).(netMetric).auc = thisStats{2}.auc;
+        stats.preGo.(freqBand).(netMetric).scores = thisStats{2}.scores;
+        stats.preGo.(freqBand).(netMetric).labels = thisStats{2}.labels;
+    end
 end
-allRT = dataStruct.RT(trialIdxs);
+if ~(params.odir == "")
+    outFilepath = [params.odir, 'SVM_', params.subj, '_', date, '.mat'];
+    save(outFilepath,'stats');
+end
 
-randOrder = randperm(Ntrl);
-Xcue = precueControl(randOrder,:,end);
-Xgo = pregoControl(randOrder,:,end);
-y = allRT(randOrder);
-ynull = y(randOrder);
-y_binned = (y < median(y)); % split RTs into fast half vs slow half
-ynull_binned = (ynull < median(y));
 
-%%% ANALYSES COMPARING EXPERIMENTAL DATA TO NULL MODELS %%%
+function stats = runSVM(Xcue, Xgo, y_binned, k, nboot)
+    allX = {Xcue, Xgo};
+    stats = {struct, struct}; %first struct stores stats about preCue data, 
+                              %second struct stores stats about preGo data
+    for m = 1:length(allX)
+        thisX = allX{m};
+        mdlSVM = fitclinear(thisX, y_binned, 'Learner', 'svm', 'KFold', k);
+        [labels,scores] = kfoldPredict(mdlSVM);
+        [~,~,~,auc] = perfcurve(y_binned, scores(:,1), 1, 'NBoot', ...
+            nboot, 'boottype', 'cper');
+        if auc(1) < 0.5 %if AUC < 0.5, flip labels for positive and negative classes
+            [~,~,~,auc] = perfcurve(y_binned, scores(:,1), 0, 'NBoot', ...
+                nboot, 'boottype', 'cper');
+        end
+        stats{m}.auc = auc;
+        stats{m}.scores = scores;
+        stats{m}.labels = labels;
+    end
+end
 
-allX = {Xcue, Xgo};
-allY = {y, ynull};
-allYbinned = {y_binned, ynull_binned};
-allStats = {struct, struct}; %first struct stores stats about preCue data, 
-                               % second struct stores stats about preGo data
+%%%%%%%%%%%%%%%%%%%%% OLD CODE -- needs cleaning %%%%%%%%%%%%%%%%%%%%%%%
 
 % Multiple linear regression
+%{
 allRMSE = {{[], []}, {[], []}};
 for m = 1:length(allX)
     thisX = allX{m};
@@ -88,39 +120,7 @@ for i = 1:length(allStats)
     allStats{i}.MLR.nullRMSE = mean(allRMSE{i}{2});
     allStats{i}.MLR.p = p;
 end
-
-
-% Logistic regression?
-
-% SVMs
-allAUC = {{[], []}, {[], []}};
-for m = 1:length(allX)
-    thisX = allX{m};
-    for n = 1:length(allY)
-        thisYbinned = allYbinned{n};
-        mdlSVM = fitclinear(thisX, thisYbinned, 'Learner', 'svm', 'KFold', k);
-        [label,scores] = kfoldPredict(mdlSVM);
-        [~,~,~,auc] = perfcurve(thisYbinned, scores(:,1), 1, 'NBoot', ...
-            nboot, 'boottype', 'cper');
-        aucSE = (auc(3) - auc(1)) / 1.96;
-        allAUC{m}{n} = [auc(1), aucSE]; %stores [mean AUC, AUC standard error]
-    end
-end
-for i = 1:length(allStats)
-    x1 = allAUC{i}{1}(1); x2 = allAUC{i}{2}(1);
-    s1 = allAUC{i}{1}(2); s2 = allAUC{i}{2}(2);
-    tstat = (x1 - x2) / sqrt(s1^2/Ntrl + s2^2/Ntrl); %Welch's formula for 
-                                % unpaired t test with unequal variances
-    df = (s1^2/Ntrl + s2^2/Ntrl)^2 / ((s1^2/Ntrl)^2/(Ntrl-1) + ...
-        (s2^2/Ntrl)^2/(Ntrl-1)); %calculate df using Welch's formula
-    p = 2*tcdf(abs(tstat),df,'upper'); %calculate 2-tailed p-value
-    allStats{i}.SVM.expAUC = x1;
-    allStats{i}.SVM.nullAUC = x2;
-    allStats{i}.SVM.p = p;
-end
-
-
-%%%%%%%%%%%%%%%%%%%%% OLD CODE -- needs cleaning %%%%%%%%%%%%%%%%%%%%%%%
+%}
 
 %{
 % FEATURE SELECTION FOR LINEAR REGRESSION
