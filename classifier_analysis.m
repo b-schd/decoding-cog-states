@@ -1,16 +1,19 @@
 % parameters
 netType = 'AR_networks'; %name of directory with network metrics of interest
 cleanTrials = true; %if true, remove all trials with negative reaction times
+binarizeY = [33.3, 66.7]; %binarize trials according to these percentiles 
+    %example: [40, 60] means that slowe trials are the lower 40% and 
+    %fast trials are the highest 40%
 netMetrics = {'strength', 'SSIndex', 'sourceIndex', 'sinkIndex'}; %network metric(s) of interest 
 freqBands = {'ThetaAlpha', 'Beta', 'LowGamma','HighGamma'}; 
              %frequency band(s) of interest; use 'none' for no band passing
 freqBandMap = containers.Map({'none', 'ThetaAlpha', 'Beta', 'LowGamma', ...
     'HighGamma'}, {[0 150], [3 12], [14 30], [35 55], [70 150]}); 
 plrty = 1; %polarity can be 1 or 2 for channel location file
-k = 10; %number of folds for k-fold cross validation
+k_folds = 10; %number of folds for k-fold cross validation
 nboot = 1000; %n for bootstrapping AUC values
 
-%%% LOAD DATA %%%
+% Load additional parameters
 params = proj_config();
 
 % Load SEEG location data 
@@ -25,9 +28,11 @@ subjInd = find(subjInd);
 if isempty(subjInd), error('subj/sess not found in database'); end
 locInfo = patient_loc(plrty).session(subjInd);
 
+% Load reaction time data
 load(params.RTdata);
 RT = RTstruct.(params.subj).RT;
-% option to clean trials when button was pressed before the cue
+
+% Option to clean (i.e., remove) trials where button was pressed before the cue
 if cleanTrials
     trialIdxs = find(RT >= 0);
 else
@@ -35,12 +40,14 @@ else
 end
 Ntrl = length(trialIdxs);
 
+% Set up structs to store results of analysis
 stats = struct('preCue',struct,'preGo',struct);
 for i = 1:length(freqBands)
     freqBand = freqBands{i};
     bands = freqBandMap(freqBand);
     stats.preCue.(freqBand) = {};
     stats.preGo.(freqBand) = {};
+
     % Load network metric data
     preCue = load(fullfile(params.ndir, params.subj, netType, ...
         sprintf('%s_net-ar_iev-1_bp-%d-%d.mat', params.subj, bands(1), bands(2))));
@@ -56,12 +63,22 @@ for i = 1:length(freqBands)
             preGoMetric(k,:,:) = preGo.Metrics(trialIdxs(k)).(netMetric);
         end
 
+        % Set up input data for classifier
+        selectRT = RT(trialIdxs);
+        RTprctile = prctile(selectRT, [binarizeY(1), binarizeY(2)]);
+        slowIdxs = find(selectRT <= RTprctile(1));
+        fastIdxs = find(selectRT > RTprctile(2));
+        binarizeIdxs = union(slowIdxs, fastIdxs);
+        tempY = -1.*ones(Ntrl,1);
+        tempY(slowIdxs)=0;
+        tempY(fastIdxs)=1;
+        y = tempY(tempY~=-1);
+        Xcue = preCueMetric(binarizeIdxs,:,end); 
+        Xgo = preGoMetric(binarizeIdxs,:,end);
+        %Note: "end" means that we only analyze network metrics from the last time bin 
+        
         % Run classifier
-        Xcue = preCueMetric(:,:,end); %analyze the metrics from the last time bin 
-        Xgo = preGoMetric(:,:,end);
-        y = RT(trialIdxs);
-        y_binned = (y < median(y)); %split RTs into fast half vs slow half
-        thisStats = runSVM(Xcue, Xgo, y_binned, k, nboot);
+        thisStats = runSVM(Xcue, Xgo, y, k_folds, nboot);
         stats.preCue.(freqBand).(netMetric).auc = thisStats{1}.auc;
         stats.preCue.(freqBand).(netMetric).scores = thisStats{1}.scores;
         stats.preCue.(freqBand).(netMetric).labels = thisStats{1}.labels;
@@ -76,18 +93,18 @@ if ~(params.odir == "")
 end
 
 
-function stats = runSVM(Xcue, Xgo, y_binned, k, nboot)
+function stats = runSVM(Xcue, Xgo, y, k_folds, nboot)
     allX = {Xcue, Xgo};
     stats = {struct, struct}; %first struct stores stats about preCue data, 
                               %second struct stores stats about preGo data
     for m = 1:length(allX)
         thisX = allX{m};
-        mdlSVM = fitclinear(thisX, y_binned, 'Learner', 'svm', 'KFold', k);
+        mdlSVM = fitclinear(thisX, y, 'Learner', 'svm', 'KFold', k_folds);
         [labels,scores] = kfoldPredict(mdlSVM);
-        [~,~,~,auc] = perfcurve(y_binned, scores(:,1), 1, 'NBoot', ...
+        [~,~,~,auc] = perfcurve(y, scores(:,1), 1, 'NBoot', ...
             nboot, 'boottype', 'cper');
         if auc(1) < 0.5 %if AUC < 0.5, flip labels for positive and negative classes
-            [~,~,~,auc] = perfcurve(y_binned, scores(:,1), 0, 'NBoot', ...
+            [~,~,~,auc] = perfcurve(y, scores(:,1), 0, 'NBoot', ...
                 nboot, 'boottype', 'cper');
         end
         stats{m}.auc = auc;
