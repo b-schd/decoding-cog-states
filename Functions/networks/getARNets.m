@@ -1,4 +1,4 @@
-function [Networks]=getARNets(data, lWin)
+function [net]=getARNets(data, lWin)
 % This script calls the getICov.R script located in EC_glasso to retrieve
 % regularized inverse covariance and partial correlation matrices across windows of 
 % channels recordings in "data". 
@@ -26,5 +26,5 @@ for w = 1:nWins
 
 end
 
-Networks.net = As; 
+net = As; 
 

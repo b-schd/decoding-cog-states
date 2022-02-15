@@ -1,4 +1,4 @@
-function [metric_matrices]= getMetsDIR(Network, metrics)
+function [metric_matrices]= getMetsDIR(net, metrics)
 % Get metrics for UNDIRECTED (symmetric) adjacency matrices
 % INPUTS:
 %   Network: A struct with fields pcm and config_pcm holding partial corr. matrices
@@ -21,8 +21,6 @@ if nargin < 2
         'kurtosisMet', 'clustering'};                                   % eigenstructure distribution %
 end
 
-Net= Network(1); 
-net =     Net.net; 
 [N, ~, T]= size(net);
 config = reshape(net, N*N, T);
 
