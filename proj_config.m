@@ -6,8 +6,8 @@ p.ddir = '/Users/graceng/OneDrive/CCDTnewDat/CCDT/eeg/'; %'/Users/bscheid/Docume
 p.ndir = '/Users/graceng/OneDrive/CCDTnewDat/network_analysis/'; % directory to saved network metrics
 p.RTdata = '/Users/graceng/Documents/Med_School/Research/BCI/control_data/allRTs_021022.mat';
 p.subjChLoc = '/Users/graceng/Documents/Med_School/Research/BCI/control_data/patient_loc_oct14.mat';
-p.odir = ''; %'/Users/graceng/Documents/Med_School/Research/BCI/control_data/SVM_Stats/'; %directory to save output
-p.subj = 'HUP133'; % string name of the subject (eg, 'HUP069') or 
+p.odir = '/Users/graceng/Documents/Med_School/Research/BCI/control_data/SVM_Stats/'; %directory to save output
+p.subj = 'HUP191'; % string name of the subject (eg, 'HUP069') or 
 % [] to process all subjects
 p.stsubj = 1; %index of first subject if processing all subjects
 p.sess = []; % session date (leave empty to choose automatically)

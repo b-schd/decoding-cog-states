@@ -66,8 +66,8 @@ for i = 1:length(freqBands)
         % Set up input data for classifier
         selectRT = RT(trialIdxs);
         RTprctile = prctile(selectRT, [binarizeY(1), binarizeY(2)]);
-        slowIdxs = find(selectRT <= RTprctile(1));
-        fastIdxs = find(selectRT > RTprctile(2));
+        fastIdxs = find(selectRT <= RTprctile(1));
+        slowIdxs = find(selectRT > RTprctile(2));
         binarizeIdxs = union(slowIdxs, fastIdxs);
         tempY = -1.*ones(Ntrl,1);
         tempY(slowIdxs)=0;
