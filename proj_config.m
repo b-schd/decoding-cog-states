@@ -2,13 +2,12 @@
 function p = proj_config()
 
 % Parameters for obtaining data
-p.ddir = '/Users/graceng/OneDrive/CCDTnewDat/CCDT/eeg/'; %'/Users/bscheid/Documents/LittLab/PROJECTS/p15_Cog_Performance/CCDT/eeg/'; % data directory
-p.ndir = '/Users/graceng/OneDrive/CCDTnewDat/network_analysis/'; % directory to saved network metrics
-p.RTdata = '/Users/graceng/Documents/Med_School/Research/BCI/control_data/allRTs_021022.mat';
-p.subjChLoc = '/Users/graceng/Documents/Med_School/Research/BCI/control_data/patient_loc_oct14.mat';
-p.odir = '/Users/graceng/Documents/Med_School/Research/BCI/control_data/SVM_Stats/'; %directory to save output
-p.subj = 'HUP191'; % string name of the subject (eg, 'HUP069') or 
-% [] to process all subjects
+p.ddir = '/Users/bscheid/Library/CloudStorage/OneDrive-Personal/CCDT_newDat/CCDT/eeg/'; % data directory
+p.ndir = '/Users/bscheid/Library/CloudStorage/OneDrive-Personal/CCDT_newDat/network_analysis/'; % data sto saved network metrics
+p.RTdata = '/Users/bscheid/Documents/LittLab/PROJECTS/p15_Cog_Performance/CCDT/allRTs_021022.mat';
+p.subjChLoc = '/Users/bscheid/Documents/LittLab/PROJECTS/p15_Cog_Performance/CCDT/patient_loc.mat';
+p.odir = '/Users/bscheid/Documents/LittLab/PROJECTS/p15_Cog_Performance/CCDT/model_output/'; %directory to save output
+p.subj = 'HUP157'; %'HUP142'; % string name of the subject (eg, 'HUP069') or 
 p.stsubj = 1; %index of first subject if processing all subjects
 p.sess = []; % session date (leave empty to choose automatically)
 p.stime = []; % session time (leave empty for all session times)
@@ -28,7 +27,7 @@ p.outlThresh = 5; % outlier threshold (standard deviations)
 p.baselineLength = 10000; % length of time window (ms) for baseline 
                             % recording prior to first cue
 p.iev = 2; % event of interest (1 = cue, 2 = go, 3 = response)
-p.winLength = 1000; % length of time window (ms) to analyze prior to event of interest
+p.winLength = 2500; % length of time window (ms) to analyze prior to event of interest
 
 % Parameters for GLASSO
 p.Lwin = 0.5; % length of window (s) to compute controllability

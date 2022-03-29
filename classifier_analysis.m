@@ -12,6 +12,7 @@ freqBandMap = containers.Map({'none', 'ThetaAlpha', 'Beta', 'LowGamma', ...
 plrty = 1; %polarity can be 1 or 2 for channel location file
 k_folds = 10; %number of folds for k-fold cross validation
 nboot = 1000; %n for bootstrapping AUC values
+metricNetType = 'Metrics_roi'; % Either "Metrics" or "MetricsRoi" 
 
 % Load additional parameters
 params = proj_config();
@@ -19,6 +20,10 @@ params = proj_config();
 % Load SEEG location data 
 load(params.subjChLoc);
 db = CCDTdatabase;
+
+for subj = {'HUP139', 'HUP154', 'HUP143', 'HUP165', 'HUP171', 'HUP179'}
+    params.subj = subj{1}
+
 subjInd = cellfun(@(x) strcmp(x,params.subj),db(:,1)); % find specified subj
 if ~isempty(params.sess)
     subjInd2 = cellfun(@(x) strcmp(x,params.sess),db(:,2)); % find specified session
@@ -53,14 +58,20 @@ for i = 1:length(freqBands)
         sprintf('%s_net-ar_iev-1_bp-%d-%d.mat', params.subj, bands(1), bands(2))));
     preGo = load(fullfile(params.ndir, params.subj, netType, ...
         sprintf('%s_net-ar_iev-2_bp-%d-%d.mat', params.subj, bands(1), bands(2))));
+    
+    if ~ismember(metricNetType, fieldnames(preCue))
+        disp(['preCue.', metricNetType, ' does not exist for this subject and band'])
+        continue;  
+    end
+    
     for j = 1:length(netMetrics)
         netMetric = netMetrics{j};
-        Nch = size(preCue.Metrics(1).(netMetric),1);
-        preCueMetric = ones(Ntrl,Nch,size(preCue.Metrics(1).(netMetric),2));
-        preGoMetric = ones(Ntrl,Nch,size(preGo.Metrics(1).(netMetric),2));
+        Nch = size(preCue.(metricNetType)(1).(netMetric),1);
+        preCueMetric = ones(Ntrl,Nch,size(preCue.(metricNetType)(1).(netMetric),2));
+        preGoMetric = ones(Ntrl,Nch,size(preGo.(metricNetType)(1).(netMetric),2));
         for k = 1:Ntrl
-            preCueMetric(k,:,:) = preCue.Metrics(trialIdxs(k)).(netMetric);
-            preGoMetric(k,:,:) = preGo.Metrics(trialIdxs(k)).(netMetric);
+            preCueMetric(k,:,:) = preCue.(metricNetType)(trialIdxs(k)).(netMetric);
+            preGoMetric(k,:,:) = preGo.(metricNetType)(trialIdxs(k)).(netMetric);
         end
 
         % Set up input data for classifier
@@ -91,7 +102,7 @@ if ~(params.odir == "")
     outFilepath = [params.odir, 'SVM_', params.subj, '_', date, '.mat'];
     save(outFilepath,'stats');
 end
-
+end
 
 function stats = runSVM(Xcue, Xgo, y, k_folds, nboot)
     allX = {Xcue, Xgo};
